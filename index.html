@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог програм — Тактичний термінал</title>
+    <style>
+        :root {
+            --bg-color: #2b332a;
+            --card-bg: #354033;
+            --card-border: #4a5c47;
+            --text-color: #d4ebd0;
+            --text-muted: #8fa88b;
+            --accent: #6b8e23;
+            --accent-hover: #556b2f;
+            --btn-text: #ffffff;
+            --header-bg: #1e261d;
+        }
+
+        [data-theme="light"] {
+            --bg-color: #e8ede5;
+            --card-bg: #ffffff;
+            --card-border: #b8c7b3;
+            --text-color: #2c3829;
+            --text-muted: #62755e;
+            --accent: #556b2f;
+            --accent-hover: #3b4d20;
+            --btn-text: #ffffff;
+            --header-bg: #d0dccb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            padding: 15px;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        header {
+            background-color: var(--header-bg);
+            border: 2px solid var(--card-border);
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background-color: var(--accent);
+            color: var(--btn-text);
+            border: none;
+            padding: 8px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        @media (min-width: 1024px) {
+            .grid {
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            }
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 2px solid var(--card-border);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            transition: transform 0.1s;
+        }
+
+        .card:hover {
+            border-color: var(--accent);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .badge {
+            width: 40px;
+            height: 40px;
+            background-color: var(--accent);
+            color: var(--btn-text);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .title-area {
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        .app-title {
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--text-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            background: transparent;
+            border: none;
+            width: 100%;
+        }
+
+        .app-title[contenteditable="true"] {
+            border-bottom: 1px dashed var(--accent);
+            outline: none;
+        }
+
+        .url-text {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+            word-break: break-all;
+        }
+
+        .card-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .card-actions a, .card-actions button {
+            text-align: center;
+            text-decoration: none;
+            padding: 6px 8px;
+            font-size: 0.8rem;
+            border-radius: 4px;
+        }
+
+        .btn-open {
+            background-color: var(--accent);
+            color: var(--btn-text);
+            grid-column: span 2;
+        }
+
+        .btn-copy {
+            background-color: transparent;
+            border: 1px solid var(--card-border);
+            color: var(--text-color);
+        }
+
+        .btn-share {
+            background-color: transparent;
+            border: 1px solid var(--card-border);
+            color: var(--text-color);
+        }
+
+        .btn-edit {
+            background-color: transparent;
+            border: 1px solid var(--card-border);
+            color: var(--text-color);
+        }
+    </style>
+</head>
+<body data-theme="dark">
+
+    <header>
+        <h1>🛡️ Тактичний каталог</h1>
+        <div class="controls">
+            <button onclick="toggleTheme()">☀️ / 🌙 Тема</button>
+            <button onclick="exportHTML()">💾 Експорт HTML</button>
+        </div>
+    </header>
+
+    <div class="grid" id="appGrid"></div>
+
+    <script>
+        let apps = [
+            { id: "1", name: "Лтава", path: "/Ltava/", icon: "Л" },
+            { id: "2", name: "sms", path: "/sms/", icon: "S" },
+            { id: "3", name: "kartka", path: "/kartka/", icon: "K" },
+            { id: "4", name: "2rpalivo", path: "/2rpalivo/", icon: "2" },
+            { id: "5", name: "gedcomtranslator", path: "/gedcomtranslator/", icon: "G" },
+            { id: "6", name: "prod_sokil", path: "/prod sokil/", icon: "P" },
+            { id: "7", name: "ppo", path: "/ppo/", icon: "P" },
+            { id: "8", name: "prod", path: "/prod/", icon: "P" },
+            { id: "9", name: "obltava", path: "/obltava/", icon: "H" },
+            { id: "10", name: "hronologiya-", path: "/hronologiya-/", icon: "H" },
+            { id: "11", name: "produkti", path: "/produkti/", icon: "P" },
+            { id: "12", name: "Palivo", path: "/Palivo", icon: "P" },
+            { id: "13", name: "zhurnal", path: "/zhurnal/", icon: "Z" },
+            { id: "14", name: "Base", path: "/Base/", icon: "B" },
+            { id: "15", name: "nebo", path: "/nebo/", icon: "N" },
+            { id: "16", name: "test", path: "/test/", icon: "T" },
+            { id: "17", name: "Calculyator", path: "/Calculyator/", icon: "C" },
+            { id: "18", name: "maxpalivo", path: "/maxpalivo/", icon: "M" },
+            { id: "19", name: "pidzhopnik", path: "/pidzhopnik/", icon: "P" }
+        ];
+
+        const baseUrl = "https://bankir2000.github.io";
+
+        function loadData() {
+            const saved = localStorage.getItem('tactical_apps_names');
+            if (saved) {
+                try {
+                    const namesMap = JSON.parse(saved);
+                    apps.forEach(app => {
+                        if (namesMap[app.id]) app.name = namesMap[app.id];
+                    });
+                } catch(e) {}
+            }
+            const savedTheme = localStorage.getItem('tactical_theme');
+            if (savedTheme) {
+                document.body.setAttribute('data-theme', savedTheme);
+            }
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('appGrid');
+            grid.innerHTML = '';
+            apps.forEach(app => {
+                const fullUrl = baseUrl + app.path;
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div>
+                        <div class="card-header">
+                            <div class="badge">${app.icon}</div>
+                            <div class="title-area">
+                                <input type="text" class="app-title" id="title-${app.id}" value="${app.name}" readonly onblur="saveName('${app.id}')">
+                                <div class="url-text">${app.path}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <a href="${fullUrl}" target="_blank" class="btn-open">🔗 Відкрити</a>
+                        <button class="btn-edit" onclick="enableEdit('${app.id}')">✏️ Ред.</button>
+                        <button class="btn-copy" onclick="copyUrl('${fullUrl}')">📋 Копіювати</button>
+                        <button class="btn-share" onclick="shareUrl('${fullUrl}', '${app.name}')" style="grid-column: span 2;">📤 Поділитись у месенджер</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function enableEdit(id) {
+            const input = document.getElementById(`title-${id}`);
+            input.removeAttribute('readonly');
+            input.focus();
+            input.select();
+        }
+
+        function saveName(id) {
+            const input = document.getElementById(`title-${id}`);
+            input.setAttribute('readonly', 'true');
+            const app = apps.find(a => a.id === id);
+            if (app) {
+                app.name = input.value;
+                let namesMap = {};
+                apps.forEach(a => namesMap[a.id] = a.name);
+                localStorage.setItem('tactical_apps_names', JSON.stringify(namesMap));
+            }
+        }
+
+        function copyUrl(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Посилання скопійовано в буфер обміну!');
+            });
+        }
+
+        function shareUrl(url, name) {
+            if (navigator.share) {
+                navigator.share({
+                    title: name,
+                    text: `Посилання на програму ${name}:`,
+                    url: url
+                }).catch(() => {});
+            } else {
+                copyUrl(url);
+            }
+        }
+
+        function toggleTheme() {
+            const current = document.body.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', next);
+            localStorage.setItem('tactical_theme', next);
+        }
+
+        function exportHTML() {
+            let htmlContent = document.documentElement.outerHTML;
+            const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'index.html';
+            a.click();
+        }
+
+        loadData();
+        renderGrid();
+    </script>
+</body>
+</html>
