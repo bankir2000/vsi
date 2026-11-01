@@ -1,18 +1,33 @@
-<html lang="uk"><head>
+<!DOCTYPE html>
+<html lang="uk">
+<head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Тактичний каталог VSI</title>
-    
-    <!-- PWA та iOS / Tablet / PC іконки -->
+
+    <!-- PWA: Android, iPhone/iPad, ПК -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e261d">
+    <meta name="color-scheme" content="dark light">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Каталог">
+    <meta name="format-detection" content="telephone=no">
 
-    <!-- Іконки -->
-    <link rel="icon" type="image/png" href="icon.png">
-    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+
+    <script>
+        // Тема до відмалювання сторінки (без блимання)
+        (function () {
+            var t = null;
+            try { t = localStorage.getItem('tactical_theme'); } catch (e) {}
+            if (!t) t = (window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
 
     <style>
         :root {
@@ -25,8 +40,11 @@
             --accent-hover: #556b2f;
             --btn-text: #ffffff;
             --header-bg: #1e261d;
+            --sat: env(safe-area-inset-top, 0px);
+            --sar: env(safe-area-inset-right, 0px);
+            --sab: env(safe-area-inset-bottom, 0px);
+            --sal: env(safe-area-inset-left, 0px);
         }
-
         [data-theme="light"] {
             --bg-color: #e8ede5;
             --card-bg: #ffffff;
@@ -35,351 +53,123 @@
             --text-muted: #62755e;
             --accent: #556b2f;
             --accent-hover: #3b4d20;
-            --btn-text: #ffffff;
             --header-bg: #d0dccb;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-color); min-height: 100vh; padding: 15px; transition: background 0.3s, color 0.3s; }
-        header { background-color: var(--header-bg); border: 2px solid var(--card-border); border-radius: 8px; padding: 15px 20px; margin-bottom: 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
-        h1 { font-size: 1.4rem; letter-spacing: 1px; text-transform: uppercase; display: flex; align-items: center; gap: 10px; }
-        .controls { display: flex; gap: 10px; flex-wrap: wrap; }
-        button { background-color: var(--accent); color: var(--btn-text); border: none; padding: 8px 14px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: background 0.2s; }
-        button:hover { background-color: var(--accent-hover); }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
-        @media (min-width: 1024px) { .grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); } }
-        .card { background-color: var(--card-bg); border: 2px solid var(--card-border); border-radius: 8px; padding: 15px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
-        .card:hover { border-color: var(--accent); }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; background: var(--bg-color); }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-color); color: var(--text-color);
+            min-height: 100vh; min-height: 100dvh;
+            padding: max(15px, var(--sat)) max(15px, var(--sar)) max(20px, var(--sab)) max(15px, var(--sal));
+            transition: background .3s, color .3s;
+            touch-action: manipulation;
+        }
+        .wrap { max-width: 1500px; margin: 0 auto; }
+
+        header {
+            background: var(--header-bg); border: 2px solid var(--card-border); border-radius: 10px;
+            padding: 14px 18px; margin-bottom: 14px; display: flex; flex-wrap: wrap;
+            justify-content: space-between; align-items: center; gap: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,.2);
+        }
+        h1 { font-size: 1.3rem; letter-spacing: 1px; text-transform: uppercase; display: flex; align-items: center; gap: 10px; }
+        h1 img { width: 36px; height: 36px; border-radius: 8px; }
+        .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        button, .btn-open {
+            font: inherit; font-weight: 600; font-size: .9rem;
+            background: var(--accent); color: var(--btn-text); border: none;
+            min-height: 44px; padding: 8px 14px; border-radius: 6px; cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center; text-align: center; text-decoration: none;
+        }
+        button:active, .btn-open:active { background: var(--accent-hover); }
+        @media (hover: hover) {
+            button:hover, .btn-open:hover { background: var(--accent-hover); }
+            .card:hover { border-color: var(--accent); }
+        }
+        button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+        .search {
+            width: 100%; min-height: 46px; margin-bottom: 14px; padding: 10px 14px;
+            font-size: 16px; /* 16px — щоб iPhone не збільшував екран при фокусі */
+            background: var(--card-bg); color: var(--text-color);
+            border: 2px solid var(--card-border); border-radius: 8px; -webkit-appearance: none; appearance: none;
+        }
+        .search::placeholder { color: var(--text-muted); }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 14px; }
+        .empty { grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 30px 0; }
+
+        .card {
+            background: var(--card-bg); border: 2px solid var(--card-border); border-radius: 10px;
+            padding: 14px; display: flex; flex-direction: column; justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0,0,0,.15);
+        }
         .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-        .badge { width: 40px; height: 40px; background-color: var(--accent); color: var(--btn-text); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; flex-shrink: 0; }
-        .title-area { flex-grow: 1; overflow: hidden; }
-        .app-title { font-size: 1rem; font-weight: bold; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: transparent; border: none; width: 100%; }
-        .app-title:not([readonly]) { background-color: rgba(255,255,255,0.1); border-bottom: 1px solid var(--accent); outline: none; padding: 2px; }
-        .url-text { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; word-break: break-all; }
-        .card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
-        .card-actions a, .card-actions button { text-align: center; text-decoration: none; padding: 6px 8px; font-size: 0.8rem; border-radius: 4px; }
-        .btn-open { background-color: var(--accent); color: var(--btn-text); grid-column: span 2; }
-        .btn-copy, .btn-share, .btn-edit { background-color: transparent; border: 1px solid var(--card-border); color: var(--text-color); }
+        .badge {
+            position: relative; width: 48px; height: 48px; flex-shrink: 0; border-radius: 10px; overflow: hidden;
+            background: var(--accent); color: var(--btn-text);
+            display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem;
+        }
+        .badge img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: var(--card-bg); }
+        .title-area { flex: 1; min-width: 0; }
+        .app-title {
+            font-size: 1rem; font-weight: bold; color: var(--text-color); width: 100%;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            background: transparent; border: none; border-radius: 4px; -webkit-appearance: none; appearance: none;
+        }
+        .app-title:not([readonly]) { font-size: 16px; background: rgba(128,128,128,.18); border-bottom: 1px solid var(--accent); padding: 4px; }
+        .url-text { font-size: .75rem; color: var(--text-muted); margin-top: 2px; word-break: break-all; }
+
+        .card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
+        .card-actions button, .card-actions a { padding: 6px 8px; font-size: .85rem; }
+        .btn-open { grid-column: span 2; }
+        .btn-share-wide { grid-column: span 2; }
+        .btn-copy, .btn-share, .btn-edit { background: transparent; border: 1px solid var(--card-border); color: var(--text-color); }
+        @media (hover: hover) { .btn-copy:hover, .btn-share:hover, .btn-edit:hover { background: rgba(128,128,128,.18); } }
+        .btn-copy:active, .btn-share:active, .btn-edit:active { background: rgba(128,128,128,.28); }
+
+        #toast {
+            position: fixed; left: 50%; bottom: calc(20px + var(--sab)); transform: translate(-50%, 20px);
+            max-width: min(92vw, 460px); background: var(--header-bg); color: var(--text-color);
+            border: 2px solid var(--accent); border-radius: 8px; padding: 12px 16px; font-size: .95rem; text-align: center;
+            opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 50;
+        }
+        #toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+        /* Телефони */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.05rem; }
+            .controls { width: 100%; }
+            .controls button { flex: 1 1 auto; }
+        }
+        /* Планшети та ПК */
+        @media (min-width: 1100px) { .grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; } }
+        @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
     </style>
 </head>
-<body data-theme="dark">
-
+<body>
+<div class="wrap">
     <header>
-        <h1>🗡️ Тактичний каталог VSI</h1>
+        <h1><img src="icon-192.png" alt="" width="36" height="36"> Тактичний каталог VSI</h1>
         <div class="controls">
-            <button onclick="toggleTheme()">☀️ / 🌙 Тема</button>
-            <button onclick="exportHTML()">💾 Експорт HTML</button>
+            <button id="installBtn" type="button" hidden>📲 Встановити</button>
+            <button id="themeBtn" type="button">☀️ / 🌙 Тема</button>
+            <button id="exportBtn" type="button">💾 Експорт HTML</button>
         </div>
     </header>
 
-    <div class="grid" id="appGrid"><div class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="badge">Л</div>
-                            <div class="title-area">
-                                <input type="text" class="app-title" id="title-1" value="Лтава" readonly="" onblur="saveName('1')">
-                                <div class="url-text">/Ltava/</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-actions">
-                        <a href="https://bankir2000.github.io/Ltava/" target="_blank" class="btn-open">🔗 Відкрити</a>
-                        <button class="btn-edit" onclick="enableEdit('1')">✏️ Ред.</button>
-                        <button class="btn-copy" onclick="copyUrl('https://bankir2000.github.io/Ltava/')">📋 Копіювати</button>
-                        <button class="btn-share" onclick="shareUrl('https://bankir2000.github.io/Ltava/', 'Лтава')" style="grid-column: span 2;">📤 Поділитись у месенджер</button>
-                    </div>
-                </div><div class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="badge">S</div>
-                            <div class="title-area">
-                                <input type="text" class="app-title" id="title-2" value="Сокіл" readonly="" onblur="saveName('2')">
-                                <div class="url-text">/sms/</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-actions">
-                        <a href="https://bankir2000.github.io/sms/" target="_blank" class="btn-open">🔗 Відкрити</a>
-                        <button class="btn-edit" onclick="enableEdit('2')">✏️ Ред.</button>
-                        <button class="btn-copy" onclick="copyUrl('https://bankir2000.github.io/sms/')">📋 Копіювати</button>
-                        <button class="btn-share" onclick="shareUrl('https://bankir2000.github.io/sms/', 'Сокіл')" style="grid-column: span 2;">📤 Поділитись у месенджер</button>
-                    </div>
-                </div><div class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="badge">K</div>
-                            <div class="title-area">
-                                <input type="text" class="app-title" id="title-3" value="kartka" onblur="saveName('3')" readonly="true">
-                                <div class="url-text">/kartka/</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-actions">
-                        <a href="https://bankir2000.github.io/kartka/" target="_blank" class="btn-open">🔗 Відкрити</a>
-                        <button class="btn-edit" onclick="enableEdit('3')">✏️ Ред.</button>
-                        <button class="btn-copy" onclick="copyUrl('https://bankir2000.github.io/kartka/')">📋 Копіювати</button>
-                        <button class="btn-share" onclick="shareUrl('https://bankir2000.github.io/kartka/', 'kartka')" style="grid-column: span 2;">📤 Поділитись у месенджер</button>
-                    </div>
-                </div><div class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="badge">2</div>
-                            <div class="title-area">
-                                <input type="text" class="app-title" id="title-4" value="2rpalivo" readonly="" onblur="saveName('4')">
-                                <div class="url-text">/2rpalivo/</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-actions">
-                        <a href="https://bankir2000.github.io/2rpalivo/" target="_blank" class="btn-open">🔗 Відкрити</a>
-                        <button class="btn-edit" onclick="enableEdit('4')">✏️ Ред.</button>
-                        <button class="btn-copy" onclick="copyUrl('https://bankir2000.github.io/2rpalivo/')">📋 Копіювати</button>
-                        <button class="btn-share" onclick="shareUrl('https://bankir2000.github.io/2rpalivo/', '2rpalivo')" style="grid-column: span 2;">📤 Поділитись у месенджер</button>
-                    </div>
-                </div><div class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="badge">G</div>
-                            <div class="title-area">
-                                <input type="text" class="app-title" id="title-5" value="gedcomtranslator" onblur="saveName('5')" readonly="true">
-                                <div class="url-text">/gedcomtranslator/</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-actions">
-                        <a href="https://bankir2000.github.io/gedcomtranslator/" target="_blank" class="btn-open">🔗 Відкрити</a>
-                        <button class="btn-edit" onclick="enableEdit('5')">✏️ Ред.</button>
-                        <button class="btn-copy" onclick="copyUrl('https://bankir2000.github.io/gedcomtranslator/')">📋 Копіювати</button>
-                        <button class="btn-share" onclick="shareUrl('https://bankir2000.github.io/gedcomtranslator/', 'gedcomtranslator')" style="grid-column: span 2;">📤 Поділитись у месенджер</button>
-                    </div>
-                </div><div class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="badge">P</div>
-                            <div class="title-area">
-                                <input type="text" class="app-title" id="title-6" value="prod_sokil" onblur="saveName('6')" readonly="true">
-                                <div class="url-text">/prod sokil/</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-actions">
-                        <a href="https://bankir2000.github.io/prod sokil/" target="_blank" class="btn-open">🔗 Відкрити</a>
-                        <button class="btn-edit" onclick="enableEdit('6')">✏️ Ред.</button>
-                        <button class="btn-copy" onclick="copyUrl('https://bankir2000.github.io/prod sokil/')">📋 Копіювати</button>
-                        <button class="btn-share" onclick="shareUrl('https://bankir2000.github.io/prod sokil/', 'prod_sokil')" style="grid-column: span 2;">📤 Поділитись у месенджер</button>
-                    </div>
-                </div><div class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="badge">P</div>
-                            <div class="title-area">
-                                <input type="text" class="app-title" id="title-7" value="ППО СМС" readonly="" onblur="saveName('7')">
-                                <div class="url-text">/ppo/</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-actions">
-                        <a href="https://bankir2000.github.io/ppo/" target="_blank" class="btn-open">🔗 Відкрити</a>
-                        <button class="btn-edit" onclick="enableEdit('7')">✏️ Ред.</button>
-                        <button class="btn-copy" onclick="copyUrl('https://bankir2000.github.io/ppo/')">📋 Копіювати</button>
-                        <button class="btn-share" onclick="shareUrl('https://bankir2000.github.io/ppo/', 'ППО СМС')" style="grid-column: span 2;">📤 Поділитись у месенджер</button>
-                    </div>
-                </div><div class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="badge">P</div>
-                            <div class="title-area">
-                                <input type="text" class="app-title" id="title-8" value="Паливо Ворскла" readonly="" onblur="saveName('8')">
-                                <div class="url-text">/prod/</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-actions">
-                        <a href="https://bankir2000.github.io/prod/" target="_blank" class="btn-open">🔗 Відкрити</a>
-                        <button class="btn-edit" onclick="enableEdit('8')">✏️ Ред.</button>
-                        <button class="btn-copy" onclick="copyUrl('https://bankir2000.github.io/prod/')">📋 Копіювати</button>
-                        <button class="btn-share" onclick="shareUrl('https://bankir2000.github.io/prod/', 'Паливо Ворскла')" style="grid-column: span 2;">📤 Поділитись у месенджер</button>
-                    </div>
-                </div><div class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="badge">H</div>
-                            <div class="title-area">
-                                <input type="text" class="app-title" id="title-9" value="obltava" readonly="" onblur="saveName('9')">
-                                <div class="url-text">/obltava/</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-actions">
-                        <a href="https://bankir2000.github.io/obltava/" target="_blank" class="btn-open">🔗 Відкрити</a>
-                        <button class="btn-edit" onclick="enableEdit('9')">✏️ Ред.</button>
-                        <button class="btn-copy" onclick="copyUrl('https://bankir2000.github.io/obltava/')">📋 Копіювати</button>
-                        <button class="btn-share" onclick="shareUrl('https://bankir2000.github.io/obltava/', 'obltava')" style="grid-column: span 2;">📤 Поділитись у месенджер</button>
-                    </div>
-                </div><div class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="badge">H</div>
-                            <div class="title-area">
-                                <input type="text" class="app-title" id="title-10" value="Хронологія подій" readonly="" onblur="saveName('10')">
-                                <div class="url-text">/hronologiya-/</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-actions">
-                        <a href="https://bankir2000.github.io/hronologiya-/" target="_blank" class="btn-open">🔗 Відкрити</a>
-                        <button class="btn-edit" onclick="enableEdit('10')">✏️ Ред.</button>
-                        <button class="btn-copy" onclick="copyUrl('https://bankir2000.github.io/hronologiya-/')">📋 Копіювати</button>
-                        <button class="btn-share" onclick="shareUrl('https://bankir2000.github.io/hronologiya-/', 'Хронологія подій')" style="grid-column: span 2;">📤 Поділитись у месенджер</button>
-                    </div>
-                </div><div class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="badge">P</div>
-                            <div class="title-area">
-                                <input type="text" class="app-title" id="title-11" value="БК" readonly="" onblur="saveName('11')">
-                                <div class="url-text">/produkti/</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-actions">
-                        <a href="https://bankir2000.github.io/produkti/" target="_blank" class="btn-open">🔗 Відкрити</a>
-                        <button class="btn-edit" onclick="enableEdit('11')">✏️ Ред.</button>
-                        <button class="btn-copy" onclick="copyUrl('https://bankir2000.github.io/produkti/')">📋 Копіювати</button>
-                        <button class="btn-share" onclick="shareUrl('https://bankir2000.github.io/produkti/', 'БК')" style="grid-column: span 2;">📤 Поділитись у месенджер</button>
-                    </div>
-                </div><div class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="badge">P</div>
-                            <div class="title-area">
-                                <input type="text" class="app-title" id="title-12" value="Palivo" readonly="" onblur="saveName('12')">
-                                <div class="url-text">/Palivo</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-actions">
-                        <a href="https://bankir2000.github.io/Palivo" target="_blank" class="btn-open">🔗 Відкрити</a>
-                        <button class="btn-edit" onclick="enableEdit('12')">✏️ Ред.</button>
-                        <button class="btn-copy" onclick="copyUrl('https://bankir2000.github.io/Palivo')">📋 Копіювати</button>
-                        <button class="btn-share" onclick="shareUrl('https://bankir2000.github.io/Palivo', 'Palivo')" style="grid-column: span 2;">📤 Поділитись у месенджер</button>
-                    </div>
-                </div><div class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="badge">Z</div>
-                            <div class="title-area">
-                                <input type="text" class="app-title" id="title-13" value="zhurnal" onblur="saveName('13')" readonly="true">
-                                <div class="url-text">/zhurnal/</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-actions">
-                        <a href="https://bankir2000.github.io/zhurnal/" target="_blank" class="btn-open">🔗 Відкрити</a>
-                        <button class="btn-edit" onclick="enableEdit('13')">✏️ Ред.</button>
-                        <button class="btn-copy" onclick="copyUrl('https://bankir2000.github.io/zhurnal/')">📋 Копіювати</button>
-                        <button class="btn-share" onclick="shareUrl('https://bankir2000.github.io/zhurnal/', 'zhurnal')" style="grid-column: span 2;">📤 Поділитись у месенджер</button>
-                    </div>
-                </div><div class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="badge">B</div>
-                            <div class="title-area">
-                                <input type="text" class="app-title" id="title-14" value="Base" readonly="" onblur="saveName('14')">
-                                <div class="url-text">/Base/</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-actions">
-                        <a href="https://bankir2000.github.io/Base/" target="_blank" class="btn-open">🔗 Відкрити</a>
-                        <button class="btn-edit" onclick="enableEdit('14')">✏️ Ред.</button>
-                        <button class="btn-copy" onclick="copyUrl('https://bankir2000.github.io/Base/')">📋 Копіювати</button>
-                        <button class="btn-share" onclick="shareUrl('https://bankir2000.github.io/Base/', 'Base')" style="grid-column: span 2;">📤 Поділитись у месенджер</button>
-                    </div>
-                </div><div class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="badge">N</div>
-                            <div class="title-area">
-                                <input type="text" class="app-title" id="title-15" value="nebo" readonly="" onblur="saveName('15')">
-                                <div class="url-text">/nebo/</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-actions">
-                        <a href="https://bankir2000.github.io/nebo/" target="_blank" class="btn-open">🔗 Відкрити</a>
-                        <button class="btn-edit" onclick="enableEdit('15')">✏️ Ред.</button>
-                        <button class="btn-copy" onclick="copyUrl('https://bankir2000.github.io/nebo/')">📋 Копіювати</button>
-                        <button class="btn-share" onclick="shareUrl('https://bankir2000.github.io/nebo/', 'nebo')" style="grid-column: span 2;">📤 Поділитись у месенджер</button>
-                    </div>
-                </div><div class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="badge">T</div>
-                            <div class="title-area">
-                                <input type="text" class="app-title" id="title-16" value="test" readonly="" onblur="saveName('16')">
-                                <div class="url-text">/test/</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-actions">
-                        <a href="https://bankir2000.github.io/test/" target="_blank" class="btn-open">🔗 Відкрити</a>
-                        <button class="btn-edit" onclick="enableEdit('16')">✏️ Ред.</button>
-                        <button class="btn-copy" onclick="copyUrl('https://bankir2000.github.io/test/')">📋 Копіювати</button>
-                        <button class="btn-share" onclick="shareUrl('https://bankir2000.github.io/test/', 'test')" style="grid-column: span 2;">📤 Поділитись у месенджер</button>
-                    </div>
-                </div><div class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="badge">C</div>
-                            <div class="title-area">
-                                <input type="text" class="app-title" id="title-17" value="Calculyator" readonly="" onblur="saveName('17')">
-                                <div class="url-text">/Calculyator/</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-actions">
-                        <a href="https://bankir2000.github.io/Calculyator/" target="_blank" class="btn-open">🔗 Відкрити</a>
-                        <button class="btn-edit" onclick="enableEdit('17')">✏️ Ред.</button>
-                        <button class="btn-copy" onclick="copyUrl('https://bankir2000.github.io/Calculyator/')">📋 Копіювати</button>
-                        <button class="btn-share" onclick="shareUrl('https://bankir2000.github.io/Calculyator/', 'Calculyator')" style="grid-column: span 2;">📤 Поділитись у месенджер</button>
-                    </div>
-                </div><div class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="badge">M</div>
-                            <div class="title-area">
-                                <input type="text" class="app-title" id="title-18" value="maxpalivo" onblur="saveName('18')" readonly="true">
-                                <div class="url-text">/maxpalivo/</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-actions">
-                        <a href="https://bankir2000.github.io/maxpalivo/" target="_blank" class="btn-open">🔗 Відкрити</a>
-                        <button class="btn-edit" onclick="enableEdit('18')">✏️ Ред.</button>
-                        <button class="btn-copy" onclick="copyUrl('https://bankir2000.github.io/maxpalivo/')">📋 Копіювати</button>
-                        <button class="btn-share" onclick="shareUrl('https://bankir2000.github.io/maxpalivo/', 'maxpalivo')" style="grid-column: span 2;">📤 Поділитись у месенджер</button>
-                    </div>
-                </div><div class="card">
-                    <div>
-                        <div class="card-header">
-                            <div class="badge">P</div>
-                            <div class="title-area">
-                                <input type="text" class="app-title" id="title-19" value="pidzhopnik" readonly="" onblur="saveName('19')">
-                                <div class="url-text">/pidzhopnik/</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-actions">
-                        <a href="https://bankir2000.github.io/pidzhopnik/" target="_blank" class="btn-open">🔗 Відкрити</a>
-                        <button class="btn-edit" onclick="enableEdit('19')">✏️ Ред.</button>
-                        <button class="btn-copy" onclick="copyUrl('https://bankir2000.github.io/pidzhopnik/')">📋 Копіювати</button>
-                        <button class="btn-share" onclick="shareUrl('https://bankir2000.github.io/pidzhopnik/', 'pidzhopnik')" style="grid-column: span 2;">📤 Поділитись у месенджер</button>
-                    </div>
-                </div></div>
+    <input class="search" id="search" type="search" placeholder="🔍 Пошук програми…" autocomplete="off" autocapitalize="off" enterkeyhint="search">
 
-    <script>
-        let apps = [
+    <main class="grid" id="appGrid"></main>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+    /*APPS_START*/
+    let apps = [
     {
         "id": "1",
         "name": "Лтава",
@@ -495,120 +285,316 @@
         "icon": "P"
     }
 ];
+    /*APPS_END*/
 
-        const baseUrl = "https://bankir2000.github.io";
+    const baseUrl = "https://bankir2000.github.io";
+    const ICON_KEY = 'tactical_icons_v1';
+    const ICON_OK_TTL = 7 * 24 * 3600e3;   // успіх: перевіряти раз на тиждень
+    const ICON_MISS_TTL = 24 * 3600e3;     // не знайдено: раз на добу
 
-        function loadData() {
-            const saved = localStorage.getItem('tactical_apps_names');
-            if (saved) {
-                try {
-                    const namesMap = JSON.parse(saved);
-                    apps.forEach(app => { if (namesMap[app.id]) app.name = namesMap[app.id]; });
-                } catch(e) {}
-            }
-            const savedTheme = localStorage.getItem('tactical_theme');
-            if (savedTheme) { document.body.setAttribute('data-theme', savedTheme); }
+    const $ = (s) => document.querySelector(s);
+    const store = {
+        get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+        set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+    };
+
+    let iconCache = {};
+    try { iconCache = JSON.parse(store.get(ICON_KEY) || '{}'); } catch (e) {}
+
+    function fullUrl(app) {
+        let p = encodeURI(app.path);
+        if (!p.endsWith('/')) p += '/';       // GitHub Pages: щоб відносні шляхи працювали
+        return baseUrl + p;
+    }
+
+    /* ---------- Toast ---------- */
+    let toastTimer;
+    function toast(msg, ms = 2200) {
+        const t = $('#toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => t.classList.remove('show'), ms);
+    }
+
+    /* ---------- Дані ---------- */
+    function loadData() {
+        try {
+            const namesMap = JSON.parse(store.get('tactical_apps_names') || '{}');
+            apps.forEach(a => { if (namesMap[a.id]) a.name = namesMap[a.id]; });
+        } catch (e) {}
+    }
+
+    /* ---------- Картки ---------- */
+    function el(tag, cls, text) {
+        const e = document.createElement(tag);
+        if (cls) e.className = cls;
+        if (text != null) e.textContent = text;
+        return e;
+    }
+
+    function setBadgeIcon(app, url) {
+        const badge = document.querySelector(`[data-badge="${app.id}"]`);
+        if (!badge || !url) return;
+        let img = badge.querySelector('img');
+        if (!img) {
+            img = new Image();
+            img.alt = '';
+            img.decoding = 'async';
+            img.onerror = () => img.remove();   // не завантажилась — лишається літера
+            badge.appendChild(img);
         }
+        img.src = url;
+    }
 
-        function renderGrid() {
-            const grid = document.getElementById('appGrid');
-            grid.innerHTML = '';
-            apps.forEach(app => {
-                const fullUrl = baseUrl + app.path;
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-                    <div>
-                        <div class="card-header">
-                            <div class="badge">${app.icon}</div>
-                            <div class="title-area">
-                                <input type="text" class="app-title" id="title-${app.id}" value="${app.name}" readonly onblur="saveName('${app.id}')">
-                                <div class="url-text">${app.path}</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-actions">
-                        <a href="${fullUrl}" target="_blank" class="btn-open">🔗 Відкрити</a>
-                        <button class="btn-edit" onclick="enableEdit('${app.id}')">✏️ Ред.</button>
-                        <button class="btn-copy" onclick="copyUrl('${fullUrl}')">📋 Копіювати</button>
-                        <button class="btn-share" onclick="shareUrl('${fullUrl}', '${app.name}')" style="grid-column: span 2;">📤 Поділитись у месенджер</button>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
+    function renderGrid() {
+        const grid = $('#appGrid');
+        const q = $('#search').value.trim().toLowerCase();
+        grid.textContent = '';
+        const list = apps.filter(a => !q || a.name.toLowerCase().includes(q) || a.path.toLowerCase().includes(q));
+        if (!list.length) grid.appendChild(el('div', 'empty', 'Нічого не знайдено'));
+
+        list.forEach(app => {
+            const url = fullUrl(app);
+            const card = el('div', 'card');
+
+            const head = el('div', 'card-header');
+            const badge = el('div', 'badge', app.icon);
+            badge.dataset.badge = app.id;
+            const area = el('div', 'title-area');
+            const input = el('input', 'app-title');
+            input.type = 'text';
+            input.value = app.name;
+            input.readOnly = true;
+            input.id = 'title-' + app.id;
+            input.setAttribute('aria-label', 'Назва програми');
+            input.addEventListener('blur', () => saveName(app.id));
+            input.addEventListener('keydown', e => { if (e.key === 'Enter') input.blur(); });
+            area.append(input, el('div', 'url-text', app.path));
+            head.append(badge, area);
+
+            const actions = el('div', 'card-actions');
+            const open = el('a', 'btn-open', '🔗 Відкрити');
+            open.href = url; open.target = '_blank'; open.rel = 'noopener';
+            const edit = el('button', 'btn-edit', '✏️ Ред.');
+            edit.type = 'button'; edit.addEventListener('click', () => enableEdit(app.id));
+            const copy = el('button', 'btn-copy', '📋 Копіювати');
+            copy.type = 'button'; copy.addEventListener('click', () => copyUrl(url));
+            const share = el('button', 'btn-share btn-share-wide', '📤 Поділитись у месенджер');
+            share.type = 'button'; share.addEventListener('click', () => shareUrl(url, app.name));
+            actions.append(open, edit, copy, share);
+
+            card.append(head, actions);
+            grid.appendChild(card);
+
+            if (iconCache[app.id] && iconCache[app.id].url) setBadgeIcon(app, iconCache[app.id].url);
+        });
+    }
+
+    function enableEdit(id) {
+        const input = $('#title-' + id);
+        input.readOnly = false;
+        input.focus();
+        input.select();
+    }
+
+    function saveName(id) {
+        const input = $('#title-' + id);
+        if (!input) return;
+        input.readOnly = true;
+        const app = apps.find(a => a.id === id);
+        if (app && input.value.trim()) {
+            app.name = input.value.trim();
+            const map = {};
+            apps.forEach(a => map[a.id] = a.name);
+            store.set('tactical_apps_names', JSON.stringify(map));
+        } else if (app) {
+            input.value = app.name;
         }
+    }
 
-        function enableEdit(id) {
-            const input = document.getElementById(`title-${id}`);
-            input.removeAttribute('readonly');
-            input.focus();
-            input.select();
-        }
+    /* ---------- Копіювання / поширення ---------- */
+    function copyUrl(url) {
+        const done = () => toast('Посилання скопійовано ✔');
+        const fallback = () => {
+            const ta = document.createElement('textarea');
+            ta.value = url; ta.setAttribute('readonly', '');
+            ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;font-size:16px';
+            document.body.appendChild(ta);
+            ta.select(); ta.setSelectionRange(0, url.length);
+            let ok = false;
+            try { ok = document.execCommand('copy'); } catch (e) {}
+            ta.remove();
+            ok ? done() : prompt('Скопіюйте посилання:', url);
+        };
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(url).then(done, fallback);
+        } else { fallback(); }
+    }
 
-        function saveName(id) {
-            const input = document.getElementById(`title-${id}`);
-            input.setAttribute('readonly', 'true');
-            const app = apps.find(a => a.id === id);
-            if (app) {
-                app.name = input.value;
-                let namesMap = {};
-                apps.forEach(a => namesMap[a.id] = a.name);
-                localStorage.setItem('tactical_apps_names', JSON.stringify(namesMap));
-            }
-        }
+    function shareUrl(url, name) {
+        if (navigator.share) {
+            navigator.share({ title: name, text: `Посилання на програму ${name}:`, url }).catch(() => {});
+        } else { copyUrl(url); }
+    }
 
-        function copyUrl(url) {
-            navigator.clipboard.writeText(url).then(() => { alert('Посилання скопійовано в буфер обміну!'); });
-        }
+    /* ---------- Тема ---------- */
+    function applyTheme(t) {
+        document.documentElement.setAttribute('data-theme', t);
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', t === 'dark' ? '#1e261d' : '#d0dccb');
+    }
+    function toggleTheme() {
+        const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        applyTheme(next);
+        store.set('tactical_theme', next);
+    }
 
-        function shareUrl(url, name) {
-            if (navigator.share) {
-                navigator.share({ title: name, text: `Посилання на програму ${name}:`, url: url }).catch(() => {});
-            } else { copyUrl(url); }
-        }
+    /* ---------- Реальні іконки програм ---------- */
+    const abs = (u, base) => { try { return new URL(u, base).href; } catch (e) { return null; } };
+    const sizeOf = (s) => parseInt(String(s || '0').split(/[x ]/)[0], 10) || 0;
+    const testImg = (url) => new Promise(res => {
+        const i = new Image();
+        i.onload = () => res(i.naturalWidth > 0);
+        i.onerror = () => res(false);
+        i.src = url;
+    });
 
-        function toggleTheme() {
-            const current = document.body.getAttribute('data-theme');
-            const next = current === 'dark' ? 'light' : 'dark';
-            document.body.setAttribute('data-theme', next);
-            localStorage.setItem('tactical_theme', next);
-        }
+    async function findIcon(app) {
+        const pageUrl = fullUrl(app);
+        const cands = [];
+        try {
+            const r = await fetch(pageUrl);
+            if (r.ok) {
+                const doc = new DOMParser().parseFromString(await r.text(), 'text/html');
+                const base = r.url || pageUrl;
+                const links = [...doc.querySelectorAll('link[rel][href]')];
+                const pick = (re) => links
+                    .filter(l => re.test(l.getAttribute('rel').toLowerCase()))
+                    .sort((a, b) => sizeOf(b.getAttribute('sizes')) - sizeOf(a.getAttribute('sizes')))
+                    .map(l => abs(l.getAttribute('href'), base));
 
-        function exportHTML() {
-            // Збираємо актуальні назви з полів введення перед експортом
-            apps.forEach(app => {
-                const input = document.getElementById(`title-${app.id}`);
-                if (input) {
-                    app.name = input.value;
+                cands.push(...pick(/apple-touch-icon/));
+
+                const mf = links.find(l => /(^|\s)manifest(\s|$)/i.test(l.getAttribute('rel')));
+                if (mf) {
+                    const mUrl = abs(mf.getAttribute('href'), base);
+                    try {
+                        const m = await (await fetch(mUrl)).json();
+                        (m.icons || [])
+                            .filter(i => !/maskable/.test(i.purpose || '') || (m.icons || []).length === 1)
+                            .sort((a, b) => sizeOf(b.sizes) - sizeOf(a.sizes))
+                            .forEach(i => cands.push(abs(i.src, mUrl)));
+                    } catch (e) {}
                 }
-            });
+                cands.push(...pick(/(^|\s)icon(\s|$)/));
+            }
+        } catch (e) {}
+        ['apple-touch-icon.png', 'icon-192.png', 'icon.png', 'favicon.png', 'favicon.ico']
+            .forEach(n => cands.push(abs(n, pageUrl)));
 
-            // Оновлюємо масив apps прямо в тексті скрипта перед збереженням файлу
-            let pageHtml = document.documentElement.outerHTML;
-            
-            // Знаходимо блок зі старого масиву та замінюємо його на оновлений з новими назвами
-            const appsScriptString = "let apps = " + JSON.stringify(apps, null, 4) + ";";
-            
-            // Замінюємо старий масив у тексті HTML на новий
-            pageHtml = pageHtml.replace(/let apps = \[\s*\{[\s\S]*?\s*\];/, appsScriptString);
-
-            const blob = new Blob([pageHtml], { type: 'text/html;charset=utf-8' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = 'index.html';
-            a.click();
-            alert('HTML успішно експортовано! Нові назви тепер зашиті в код файлу.');
+        for (const c of [...new Set(cands.filter(Boolean))]) {
+            if (await testImg(c)) return c;
         }
+        return null;
+    }
 
-        loadData();
-        renderGrid();
+    async function loadIcons() {
+        if (!navigator.onLine) return;
+        const now = Date.now();
+        const todo = apps.filter(a => {
+            const c = iconCache[a.id];
+            return !c || now - c.t > (c.url ? ICON_OK_TTL : ICON_MISS_TTL);
+        });
+        let i = 0;
+        const worker = async () => {
+            while (i < todo.length) {
+                const app = todo[i++];
+                const url = await findIcon(app);
+                iconCache[app.id] = { url: url || '', t: Date.now() };
+                store.set(ICON_KEY, JSON.stringify(iconCache));
+                if (url) setBadgeIcon(app, url);
+            }
+        };
+        await Promise.all([worker(), worker(), worker(), worker()]);
+    }
 
-        // Реєстрація Service Worker під PWA
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW error:', err));
-            });
+    /* ---------- Встановлення (Android / ПК / iPhone) ---------- */
+    const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    let deferredPrompt = null;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        $('#installBtn').hidden = false;
+    });
+    window.addEventListener('appinstalled', () => { $('#installBtn').hidden = true; deferredPrompt = null; });
+
+    if (isIOS && !isStandalone()) $('#installBtn').hidden = false;
+
+    $('#installBtn').addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            await deferredPrompt.userChoice;
+            deferredPrompt = null;
+            $('#installBtn').hidden = true;
+        } else if (isIOS) {
+            toast('iPhone/iPad: натисніть «Поділитись» (⬆︎) у Safari → «На екран “Додому”»', 7000);
         }
-    </script>
+    });
 
-</body></html>
+    /* ---------- Експорт ---------- */
+    async function exportHTML() {
+        apps.forEach(app => {
+            const input = $('#title-' + app.id);
+            if (input) app.name = input.value;
+        });
+
+        const clone = document.documentElement.cloneNode(true);
+        clone.removeAttribute('data-theme');
+        clone.querySelector('#appGrid').textContent = '';
+        clone.querySelector('#search').removeAttribute('value');
+        const t = clone.querySelector('#toast'); t.textContent = ''; t.className = '';
+        const ib = clone.querySelector('#installBtn'); ib.setAttribute('hidden', '');
+
+        let pageHtml = '<!DOCTYPE html>\n' + clone.outerHTML;
+        const arr = JSON.stringify(apps, null, 4);
+        pageHtml = pageHtml.replace(/\/\*APPS_START\*\/[\s\S]*?\/\*APPS_END\*\//,
+            () => '/*APPS_START*/\n    let apps = ' + arr + ';\n    /*APPS_END*/');
+
+        const file = new File([pageHtml], 'index.html', { type: 'text/html' });
+        // iOS у встановленому режимі не завжди дозволяє завантаження — тоді через меню «Поділитись»
+        if ((isIOS || isStandalone()) && navigator.canShare && navigator.canShare({ files: [file] })) {
+            try { await navigator.share({ files: [file], title: 'index.html' }); return; }
+            catch (e) { if (e && e.name === 'AbortError') return; }
+        }
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(file);
+        a.download = 'index.html';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+        toast('HTML експортовано! Нові назви зашито у файл.', 3500);
+    }
+
+    /* ---------- Старт ---------- */
+    $('#themeBtn').addEventListener('click', toggleTheme);
+    $('#exportBtn').addEventListener('click', exportHTML);
+    $('#search').addEventListener('input', renderGrid);
+
+    applyTheme(document.documentElement.getAttribute('data-theme') || 'dark');
+    loadData();
+    renderGrid();
+    loadIcons();
+    window.addEventListener('online', loadIcons);
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW error:', err));
+        });
+    }
+</script>
+</body>
+</html>
