@@ -203,7 +203,7 @@
     {
         "id": "6",
         "name": "Паливо Сокіл",
-        "path": "/prod_sokil/",
+        "path": "/prod sokil/",
         "icon": "P"
     },
     {
@@ -520,48 +520,33 @@
     }
 
     /* ---------- Встановлення (Android / ПК / iPhone) ---------- */
-    const INSTALLED_KEY = 'tactical_installed';
+    const IOS_HINT_KEY = 'tactical_ios_hint_shown';
     const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
     const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     let deferredPrompt = null;
 
-    function markInstalled() {
-        store.set(INSTALLED_KEY, '1');
-        $('#installBtn').hidden = true;
-        deferredPrompt = null;
-    }
-    const wasInstalled = () => store.get(INSTALLED_KEY) === '1';
-
-    // Запущено як встановлена програма — кнопка більше не потрібна
-    if (isStandalone()) markInstalled();
-
+    // Android / ПК: браузер сам надсилає цю подію ЛИШЕ коли програма не встановлена.
+    // Тому після видалення програми кнопка з'являється знову автоматично.
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
-        if (wasInstalled() || isStandalone()) return;
+        if (isStandalone()) return;
         deferredPrompt = e;
         $('#installBtn').hidden = false;
     });
-    window.addEventListener('appinstalled', markInstalled);
+    window.addEventListener('appinstalled', () => { $('#installBtn').hidden = true; deferredPrompt = null; });
 
-    // Chrome/Edge: чи вже є встановлена копія (відкрито у вкладці браузера)
-    if (navigator.getInstalledRelatedApps) {
-        navigator.getInstalledRelatedApps().then(list => { if (list && list.length) markInstalled(); }).catch(() => {});
-    }
-
-    // iPhone/iPad: подію встановлення Safari не надає, тому показуємо підказку
-    // і після її показу більше не нагадуємо
-    if (isIOS && !isStandalone() && !wasInstalled()) $('#installBtn').hidden = false;
+    // iPhone/iPad: Safari не повідомляє про встановлення, тому підказку показуємо один раз
+    if (isIOS && !isStandalone() && store.get(IOS_HINT_KEY) !== '1') $('#installBtn').hidden = false;
 
     $('#installBtn').addEventListener('click', async () => {
         if (deferredPrompt) {
             deferredPrompt.prompt();
-            const choice = await deferredPrompt.userChoice;
+            await deferredPrompt.userChoice;
             deferredPrompt = null;
-            if (choice && choice.outcome === 'accepted') markInstalled();
-            else $('#installBtn').hidden = true;
+            $('#installBtn').hidden = true;
         } else if (isIOS) {
             toast('iPhone/iPad: натисніть «Поділитись» (⬆︎) у Safari → «На екран “Додому”»', 7000);
-            store.set(INSTALLED_KEY, '1');       // більше не показувати кнопку
+            store.set(IOS_HINT_KEY, '1');
             setTimeout(() => { $('#installBtn').hidden = true; }, 7000);
         }
     });
